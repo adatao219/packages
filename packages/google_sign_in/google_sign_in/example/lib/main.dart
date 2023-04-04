@@ -13,8 +13,10 @@ import 'package:http/http.dart' as http;
 
 GoogleSignIn _googleSignIn = GoogleSignIn(
   // Optional clientId
-  // clientId: '479882132969-9i9aqik3jfjd7qhci1nqf0bm2g71rm1u.apps.googleusercontent.com',
+  clientId: '801786912627-o74bvniontov49r456fun9cv8874lnqo.apps.googleusercontent.com',
+  serverClientId: '801786912627-cv6760khcrahearh4d8ptp315dafjogl.apps.googleusercontent.com',
   scopes: <String>[
+    'openid',
     'email',
     'https://www.googleapis.com/auth/contacts.readonly',
   ],
@@ -44,11 +46,21 @@ class SignInDemoState extends State<SignInDemo> {
   void initState() {
     super.initState();
     _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
+      account!.authentication.then((googleAuth) {
+        setState(() {
+        GoogleSignInAuthentication? googleAuthentication = googleAuth;
+      });
+        print(googleAuth.idToken);
+      }).catchError((err) {
+        print('inner error');
+      });
+
       setState(() {
         _currentUser = account;
       });
       if (_currentUser != null) {
         _handleGetContact(_currentUser!);
+
       }
     });
     _googleSignIn.signInSilently();
@@ -62,7 +74,9 @@ class SignInDemoState extends State<SignInDemo> {
       Uri.parse('https://people.googleapis.com/v1/people/me/connections'
           '?requestMask.includeField=person.names'),
       headers: await user.authHeaders,
+      
     );
+    print(user);
     if (response.statusCode != 200) {
       setState(() {
         _contactText = 'People API gave a ${response.statusCode} '
